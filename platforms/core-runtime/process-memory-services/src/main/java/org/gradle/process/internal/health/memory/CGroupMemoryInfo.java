@@ -29,10 +29,27 @@ public class CGroupMemoryInfo implements OsMemoryInfo {
     private static final String CG2_MEM_USAGE_FILE = "/sys/fs/cgroup/memory.current";
     private static final String CG2_MEM_TOTAL_FILE = "/sys/fs/cgroup/memory.max";
 
+    private final String cg1UsageFilePath;
+    private final String cg1TotalFilePath;
+    private final String cg2UsageFilePath;
+    private final String cg2TotalFilePath;
+
+    public CGroupMemoryInfo() {
+        this(CG1_MEM_USAGE_FILE, CG1_MEM_TOTAL_FILE, CG2_MEM_USAGE_FILE, CG2_MEM_TOTAL_FILE);
+    }
+
+    @VisibleForTesting
+    private CGroupMemoryInfo(String cg1UsageFilePath, String cg1TotalFilePath, String cg2UsageFilePath, String cg2TotalFilePath) {
+        this.cg1UsageFilePath = cg1UsageFilePath;
+        this.cg1TotalFilePath = cg1TotalFilePath;
+        this.cg2UsageFilePath = cg2UsageFilePath;
+        this.cg2TotalFilePath = cg2TotalFilePath;
+    }
+
     @Override
     public OsMemoryStatus getOsSnapshot() {
-        File cg2Usage = new File(CG2_MEM_USAGE_FILE);
-        File cg2Total = new File(CG2_MEM_TOTAL_FILE);
+        File cg2Usage = new File(cg2UsageFilePath);
+        File cg2Total = new File(cg2TotalFilePath);
         if (cg2Usage.exists() && cg2Total.exists()) {
             return getOsSnapshotFromCgroup(
                 readStringFromFile(cg2Usage),
@@ -40,8 +57,8 @@ public class CGroupMemoryInfo implements OsMemoryInfo {
             );
         }
         return getOsSnapshotFromCgroup(
-            readStringFromFile(new File(CG1_MEM_USAGE_FILE)),
-            readStringFromFile(new File(CG1_MEM_TOTAL_FILE))
+            readStringFromFile(new File(cg1UsageFilePath)),
+            readStringFromFile(new File(cg1TotalFilePath))
         );
     }
 
